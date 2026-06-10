@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>가챠 시뮬레이터</title>
+</head>
+<body>
+
+<h2>가챠 시뮬레이터</h2>
+
+P 개수 (1~20):
+<input type="number" id="count" min="1" max="20" value="5">
+<button onclick="createInputs()">생성</button>
+
+<div id="inputs"></div>
+
+<button onclick="draw()">가챠 돌리기</button>
+
+<h3 id="result"></h3>
+
+<script>
+
+function createInputs() {
+    const count = Number(document.getElementById("count").value);
+    const div = document.getElementById("inputs");
+
+    div.innerHTML = "";
+
+    for(let i=1;i<=count;i++){
+        div.innerHTML += `
+            <div>
+                P${i} 확률:
+                <input type="number" id="p${i}" min="0" max="100" value="">
+            </div>
+        `;
+    }
+}
+
+function draw() {
+
+    const count = Number(document.getElementById("count").value);
+
+    let weights = [];
+    let specifiedTotal = 0;
+    let emptyCount = 0;
+
+    for(let i=1;i<=count;i++){
+
+        const value =
+            document.getElementById(`p${i}`).value.trim();
+
+        if(value === ""){
+            weights.push(null);
+            emptyCount++;
+        }
+        else{
+            const num = Number(value);
+            weights.push(num);
+            specifiedTotal += num;
+        }
+    }
+
+    if(specifiedTotal > 100){
+        alert("입력한 확률의 합이 100%를 초과했습니다.");
+        return;
+    }
+
+    const remain = 100 - specifiedTotal;
+
+    if(emptyCount > 0){
+        const autoValue = remain / emptyCount;
+
+        for(let i=0;i<weights.length;i++){
+            if(weights[i] === null){
+                weights[i] = autoValue;
+            }
+        }
+    }
+    else if(specifiedTotal !== 100){
+        alert("모든 확률을 입력했다면 합이 정확히 100이어야 합니다.");
+        return;
+    }
+
+    let rand = Math.random() * 100;
+    let cumulative = 0;
+
+    for(let i=0;i<count;i++){
+
+        cumulative += weights[i];
+
+        if(rand <= cumulative){
+            document.getElementById("result").innerHTML =
+                `결과: P${i+1}<br><br>` +
+                weights.map(
+                    (w,index)=>`P${index+1}: ${w.toFixed(2)}%`
+                ).join("<br>");
+
+            return;
+        }
+    }
+}
+
+createInputs();
+
+</script>
+
+</body>
+</html>
